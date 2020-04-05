@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { Link } from 'umi';
+import styles from './sider.css';
 
 import {
   LogoutOutlined,
-  HomeFilled,
   BarChartOutlined,
   SlidersOutlined,
   ClusterOutlined,
+  DeploymentUnitOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -22,18 +23,18 @@ export default function SiderLyout(props) {
   }
   return (
     <Sider collapsible collapsed={collapsed} onCollapse={handleChangeToggle}>
-      <div className="logo" />
+      <div className={styles.logo}>Jenkins-K</div>
       <Menu theme="dark" defaultSelectedKeys={[selectedPath]} mode="inline">
         <Menu.Item key="/">
           <Link to="/">
-            <HomeFilled />
-            <span>首页</span>
-          </Link>
-        </Menu.Item>
-        <Menu.Item key="/live">
-          <Link to="/live">
             <BarChartOutlined />
             <span>监控</span>
+          </Link>
+        </Menu.Item>
+        <Menu.Item key="/deploy">
+          <Link to="/deploy">
+            <DeploymentUnitOutlined />
+            <span>发布</span>
           </Link>
         </Menu.Item>
         <SubMenu
@@ -41,18 +42,15 @@ export default function SiderLyout(props) {
           title={
             <span>
               <SlidersOutlined />
-              <span>任务管理</span>
+              <span>集成管理</span>
             </span>
           }
         >
-          <Menu.Item key="/view">
-            <Link to="/view">视图</Link>
+          <Menu.Item key="/views">
+            <Link to="/views">视图</Link>
           </Menu.Item>
-          <Menu.Item key="/job">
-            <Link to="/job">任务</Link>
-          </Menu.Item>
-          <Menu.Item key="/build">
-            <Link to="/build">构建</Link>
+          <Menu.Item key="/jobs">
+            <Link to="/jobs">任务</Link>
           </Menu.Item>
         </SubMenu>
         <SubMenu

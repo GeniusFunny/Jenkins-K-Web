@@ -8,7 +8,22 @@ export default defineConfig({
       component: '@/layouts/index',
       routes: [
         { exact: true, path: '/', component: '@/pages/index' },
-        { exact: true, path: '/job', component: '@/pages/job' },
+        { exact: true, path: '/views', component: '@/pages/views' },
+        { exact: true, path: '/jobs', component: '@/pages/jobs' },
+      ],
+    },
+    {
+      exact: false,
+      path: '/login',
+      component: '@/layouts/LoginLayout',
+      routes: [
+        { exact: true, path: '/login', component: '@/pages/login' },
+        {
+          exact: true,
+          path: '/logout',
+          redirect: '/login',
+          component: '@/pages/login',
+        },
       ],
     },
   ],
