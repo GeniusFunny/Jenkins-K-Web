@@ -9,6 +9,7 @@ import {
   SlidersOutlined,
   ClusterOutlined,
   DeploymentUnitOutlined,
+  CodeOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -23,12 +24,12 @@ export default function SiderLyout(props) {
   }
   return (
     <Sider collapsible collapsed={collapsed} onCollapse={handleChangeToggle}>
-      <div className={styles.logo}>Jenkins-K</div>
+      <div className={styles.logo}>App</div>
       <Menu theme="dark" defaultSelectedKeys={[selectedPath]} mode="inline">
-        <Menu.Item key="/">
-          <Link to="/">
-            <BarChartOutlined />
-            <span>监控</span>
+        <Menu.Item key="/management">
+          <Link to="/management">
+            <CodeOutlined />
+            <span>应用</span>
           </Link>
         </Menu.Item>
         <Menu.Item key="/deploy">
@@ -62,8 +63,8 @@ export default function SiderLyout(props) {
             </span>
           }
         >
+          <Menu.Item key="/update">更新</Menu.Item>
           <Menu.Item key="/rollback">回滚</Menu.Item>
-          <Menu.Item key="/close">关闭</Menu.Item>
         </SubMenu>
 
         <Menu.Item key="/login">

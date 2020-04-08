@@ -35,3 +35,10 @@ export interface JobList {
     color: string;
   };
 }
+export interface DeploymentList {
+  [index: number]: {
+    metadata: object;
+    spec: object;
+    status: object;
+  };
+}

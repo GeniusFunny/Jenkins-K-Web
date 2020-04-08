@@ -7,9 +7,10 @@ export default defineConfig({
       path: '/',
       component: '@/layouts/index',
       routes: [
-        { exact: true, path: '/', component: '@/pages/index' },
+        { exact: true, path: '/', component: '@/pages/management' },
         { exact: true, path: '/views', component: '@/pages/views' },
         { exact: true, path: '/jobs', component: '@/pages/jobs' },
+        { exact: true, path: '/management', component: '@/pages/management' },
       ],
     },
     {

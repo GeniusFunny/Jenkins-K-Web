@@ -3,10 +3,19 @@ import { ViewInfo, ViewList, JobList, JobInfo } from '../types/api';
 
 const API = 'http://localhost:7001/api';
 const JenkinsPath = `${API}/jenkins`;
+const K8sPath = `${API}/k8s`;
 
 function api<T>(url: string, options?: object): Promise<T> {
+  if (options) {
+    options = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      ...options,
+      body: JSON.stringify(options.body),
+    };
+  }
   return fetch(url, options).then(response => {
-    console.log(response);
     if (!response.ok) {
       throw new Error(response.statusText);
     }
@@ -14,6 +23,9 @@ function api<T>(url: string, options?: object): Promise<T> {
     return response.json();
   });
 }
+
+/* Jenkins API*/
+
 /* View */
 function fetchViewInfo(name: string) {
   return api<ViewInfo>(`${JenkinsPath}/views/${name}`);
@@ -26,10 +38,7 @@ function fetchViewList() {
 function createView(data: object) {
   return api<{}>(`${JenkinsPath}/views`, {
     method: 'POST',
-    body: JSON.stringify(data),
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    body: data,
   });
 }
 
@@ -56,7 +65,10 @@ function fetchJobInfo(name: string) {
   return api<JobInfo>(`${JenkinsPath}/jobs/${name}`);
 }
 function createJob(data: object) {
-  return api<{}>(`${JenkinsPath}/jobs`, { method: 'POST', body: data });
+  return api<{}>(`${JenkinsPath}/jobs`, {
+    method: 'POST',
+    body: data,
+  });
 }
 
 function deleteJob(name: string) {
@@ -87,10 +99,67 @@ function enableJob(name: string) {
     body: { job: name },
   });
 }
-
 /* Build */
 /* Login */
 /* Opertion */
+
+/* Kubernetes  API */
+
+/* Deployment */
+function fetchDeploymentList(namespace = 'default') {
+  return api<{}>(`${K8sPath}/deployments?namespace=${namespace}`);
+}
+
+function fetchDeploymentInfo(deployment, namespace = 'default') {
+  return api<{}>(`${K8sPath}/deployments/${deployment}?namespace=${namespace}`);
+}
+
+function updateDeployment(deployment, patchData, namespace = 'default') {
+  patchData.namespace = namespace;
+  return api<{}>(`${K8sPath}/deployments/${deployment}`, {
+    method: 'PUT',
+    body: patchData,
+  });
+}
+
+function rollbackDeployment(deployment, namespace = 'default') {
+  return api<{}>(`${K8sPath}/rollback`, {
+    method: 'POST',
+    body: {
+      deployment,
+      namespace,
+    },
+  });
+}
+
+function deleteDeployment(deployment, namespace = 'default') {
+  return api<{}>(`${K8sPath}/deployments/${deployment}`, {
+    method: 'DELETE',
+    body: {
+      namespace,
+    },
+  });
+}
+
+function scaleDeployment(deployment, size = 3, namespace = 'default') {
+  return api<{}>(`${K8sPath}/scale`, {
+    method: 'DELETE',
+    body: {
+      deployment,
+      size,
+      namespace,
+    },
+  });
+}
+function createDeployment(data, namespace = 'default') {
+  return api<{}>(`${K8sPath}/deployments`, {
+    method: 'POST',
+    body: {
+      ...data,
+      namespace,
+    },
+  });
+}
 
 export {
   fetchViewInfo,
@@ -107,4 +176,11 @@ export {
   updateJobConfig,
   disableJob,
   enableJob,
+  fetchDeploymentList,
+  fetchDeploymentInfo,
+  createDeployment,
+  deleteDeployment,
+  updateDeployment,
+  rollbackDeployment,
+  scaleDeployment,
 };

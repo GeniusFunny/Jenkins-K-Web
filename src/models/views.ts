@@ -1,9 +1,4 @@
-import {
-  fetchViewList,
-  createView,
-  updateViewConfig,
-  deleteView,
-} from '../services/index';
+import { fetchViewList, createView, deleteView } from '../services/index';
 import { ViewList } from '../types/api';
 import { message } from 'antd';
 

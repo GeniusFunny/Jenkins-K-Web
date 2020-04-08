@@ -2,20 +2,27 @@ import React from 'react';
 import { connect, Link } from 'umi';
 import {
   Table,
-  Tag,
   Drawer,
   Form,
+  Tag,
   Button,
   Col,
   Row,
   Input,
   Select,
   List,
-  Card,
 } from 'antd';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  EditOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
 
 const { Option } = Select;
+const mapJobClassToName = {
+  'hudson.model.FreeStyleProject': '自由风格的软件项目',
+  'org.jenkinsci.plugins.workflow.job.WorkflowJob': '流水线',
+};
 
 class Jobs extends React.Component {
   constructor(props) {
@@ -25,30 +32,46 @@ class Jobs extends React.Component {
         title: '任务',
         dataIndex: 'name',
         key: 'name',
+        width: 200,
       },
       {
         title: '类型',
         key: '_class',
         dataIndex: '_class',
+        width: 100,
+        render: _class => (
+          <Tag color="#108ee9">{mapJobClassToName[_class]}</Tag>
+        ),
       },
       {
         title: '描述',
         dataIndex: 'description',
         key: 'description',
-      },
-      {
-        title: '当前状态',
-        dataIndex: 'color',
-        key: 'color',
-        render: color => {
-          if (color === 'red') return <span>失败</span>;
-          return <span>成功</span>;
-        },
+        width: 300,
       },
       {
         title: '上次构建',
         dataIndex: 'lastBuild',
         key: 'lastBuild',
+        render: data => <span>{data ? data.number : '无'}</span>,
+      },
+      {
+        title: '上次成功构建',
+        dataIndex: 'lastSuccessfulBuild',
+        key: 'lastSuccessfulBuild',
+        render: data => <span>{data ? data.number : '无'}</span>,
+      },
+      {
+        title: '当前状态',
+        dataIndex: 'color',
+        key: 'color',
+        width: 100,
+        render: color =>
+          color === 'red' ? (
+            <Tag color="error">failed</Tag>
+          ) : (
+            <Tag color="success">success</Tag>
+          ),
       },
       {
         title: 'Action',
@@ -59,6 +82,7 @@ class Jobs extends React.Component {
               onClick={() => this.showDrawer(record.name)}
               style={{ marginRight: 20 }}
             />
+            <SettingOutlined style={{ marginRight: 20 }} />
             <DeleteOutlined onClick={() => this.onDelete(record.name)} />
           </div>
         ),
@@ -122,7 +146,7 @@ class Jobs extends React.Component {
           type="primary"
           style={{ marginBottom: 16 }}
         >
-          Add a Job
+          新增任务
         </Button>
         <Table columns={this.columns} loading={loading} dataSource={list} />
         <Drawer
