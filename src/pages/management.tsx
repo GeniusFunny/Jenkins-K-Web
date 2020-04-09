@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect } from 'umi';
+import { connect, Link } from 'umi';
 import {
   Table,
   Drawer,
@@ -215,6 +215,9 @@ class Deployments extends React.Component {
     } = spec;
     return (
       <>
+        <Button type="primary" style={{ marginBottom: 16 }}>
+          <Link to="/newDeployment">新增应用</Link>
+        </Button>
         <Table
           columns={this.columns}
           loading={loading}

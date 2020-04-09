@@ -11,6 +11,11 @@ export default defineConfig({
         { exact: true, path: '/views', component: '@/pages/views' },
         { exact: true, path: '/jobs', component: '@/pages/jobs' },
         { exact: true, path: '/management', component: '@/pages/management' },
+        {
+          exact: true,
+          path: '/newDeployment',
+          component: '@/pages/newDeployment',
+        },
       ],
     },
     {
