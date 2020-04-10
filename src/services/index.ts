@@ -19,7 +19,6 @@ function api<T>(url: string, options?: object): Promise<T> {
     if (!response.ok) {
       throw new Error(response.statusText);
     }
-    if (response.status === 201) return;
     return response.json();
   });
 }
@@ -160,6 +159,38 @@ function createDeployment(data, namespace = 'default') {
     },
   });
 }
+/* Service */
+
+function fetchServiceList(namespace = 'default') {
+  return api<{}>(`${K8sPath}/services?namespace=${namespace}`);
+}
+function fetchServiceInfo(service, namespace = 'default') {
+  return api<{}>(`${K8sPath}/services/${service}?namespace=${namespace}`);
+}
+function updateService(service, patchData, namespace = 'default') {
+  patchData.namespace = namespace;
+  return api<{}>(`${K8sPath}/services/${service}`, {
+    method: 'PUT',
+    body: patchData,
+  });
+}
+function deleteService(service, namespace = 'default') {
+  return api<{}>(`${K8sPath}/services/${service}`, {
+    method: 'DELETE',
+    body: {
+      namespace,
+    },
+  });
+}
+function createService(data, namespace = 'default') {
+  return api<{}>(`${K8sPath}/services`, {
+    method: 'POST',
+    body: {
+      ...data,
+      namespace,
+    },
+  });
+}
 
 export {
   fetchViewInfo,
@@ -183,4 +214,9 @@ export {
   updateDeployment,
   rollbackDeployment,
   scaleDeployment,
+  fetchServiceList,
+  fetchServiceInfo,
+  createService,
+  deleteService,
+  updateService,
 };

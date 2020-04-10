@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect, Link } from 'umi';
+import { connect, Link, history } from 'umi';
 import {
   Table,
   Drawer,
@@ -88,18 +88,16 @@ class Jobs extends React.Component {
         ),
       },
     ];
-    this.type = 1;
     this.data = {};
   }
   showDrawer = name => {
-    this.type = typeof name === 'undefined' ? 0 : 1;
     this.props.dispatch({
       type: 'jobs/showJobInfo',
       name,
     });
   };
   onAdd = () => {
-    this.showDrawer();
+    history.push('/newJob');
   };
   onClose = () => {
     this.props.dispatch({
@@ -113,12 +111,8 @@ class Jobs extends React.Component {
     });
   };
   onSubmit = () => {
+    this.updateJobInfo();
     this.onClose();
-    if (this.type) {
-      this.updateJobInfo();
-    } else {
-      this.addNewJob();
-    }
   };
   onCancel = () => {
     this.onClose();
@@ -134,7 +128,6 @@ class Jobs extends React.Component {
       type: 'jobs/',
     });
   };
-  addNewJob = () => {};
 
   render() {
     const { data } = this.props;
@@ -150,7 +143,7 @@ class Jobs extends React.Component {
         </Button>
         <Table columns={this.columns} loading={loading} dataSource={list} />
         <Drawer
-          title={this.type ? '修改任务' : '新增任务'}
+          title={'修改'}
           width={720}
           onClose={this.onClose}
           visible={visible}

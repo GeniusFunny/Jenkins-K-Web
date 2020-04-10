@@ -1,17 +1,22 @@
-import React, { Component } from 'react';
-import { SmileOutlined } from '@ant-design/icons';
+import React from 'react';
+import {
+  createDeployment,
+  createService,
+  deleteDeployment,
+} from '../services/index';
+import { history } from 'umi';
 import {
   Form,
   Input,
-  DatePicker,
-  TimePicker,
   Select,
-  Cascader,
   InputNumber,
   Button,
   Typography,
+  message,
+  Layout,
+  Row,
+  Col,
 } from 'antd';
-import styles from './newDeployment.css';
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -33,193 +38,314 @@ const formItemLayout = {
     },
   },
 };
-class Deployment extends Component {
-  constructor(props) {
-    super(props);
-    this.data = {
-      deployment: {
-        metadata: {
-          name: '',
-          labels: '',
+function NewDeployment() {
+  let data = {
+    namespace: '',
+    deployment: {
+      metadata: {
+        name: '',
+        labels: '',
+      },
+      spec: {
+        replicas: 0,
+        selector: {
+          matchLabels: '',
         },
-        spec: {
-          replicas: 0,
-          selector: {
-            matchLabels: '',
+        template: {
+          metadata: {
+            labels: '',
           },
-          template: {
-            metadata: {
-              labels: '',
-            },
-            spec: {
-              containers: '',
-            },
+          spec: {
+            containers: '',
           },
         },
       },
-      service: {
-        kind: '',
-        metadata: {
-          name: '',
-        },
-        spec: {
-          selector: '',
-        },
-        ports: '',
+    },
+    service: {
+      metadata: {
+        name: '',
+        labels: '',
       },
-    };
-  }
-  handleValueChange = (changedValues, allValues) => {
+      spec: {
+        selector: '',
+        type: '',
+      },
+      ports: '',
+    },
+  };
+  function handleValueChange(changedValues = {}) {
     const keyString = Object.keys(changedValues)[0];
     const value = Object.values(changedValues)[0];
     const keys = keyString.split('.');
     const keysLen = keys.length;
-    let cur = this.data;
+    let cur = data;
     for (let i = 0; i < keysLen - 1; i++) {
       cur = cur[keys[i]];
     }
     cur[keys[keysLen - 1]] = value;
-  };
-  checkData = () => {};
-  wrapperData = () => {};
-  submitData = () => {};
-  handleClick = () => {};
-  render() {
-    return (
-      <Form
-        {...formItemLayout}
-        onValuesChange={this.handleValueChange}
-        className={styles.form}
-      >
-        <div>
-          <Title level={4}>基本信息</Title>
-          <Form.Item
-            name="deployment.metadata.name"
-            label="应用名称"
-            rules={[{ required: true, message: '请输入应用名称' }]}
-          >
-            <Input placeholder="请输入应用名称" />
-          </Form.Item>
-          <Form.Item
-            name="deployment.metadata.labels"
-            label="标签"
-            rules={[
-              {
-                required: true,
-                message:
-                  '请输入标签与值（JSON对象），例如：{"app": "demo", "version": "1.7"}',
-              },
-            ]}
-          >
-            <Input placeholder="请输入标签与值（JSON对象）" />
-          </Form.Item>
-          <Form.Item
-            name="deployment.spec.replicas"
-            label="节点数"
-            rules={[
-              { required: true, message: '请输入节点数', type: 'number' },
-            ]}
-          >
-            <InputNumber placeholder="请输入节点数" />
-          </Form.Item>
-          <Form.Item
-            name="deployment.spec.selector.matchLabels"
-            label="匹配规则"
-            rules={[
-              {
-                required: true,
-                message:
-                  '请输入匹配规则（JSON对象），例如：{"app": "demo", "version": "1.7"}',
-              },
-            ]}
-          >
-            <Input placeholder="请输入匹配规则" />
-          </Form.Item>
-        </div>
-        <div>
-          <Title level={4}>节点模版</Title>
-          <Form.Item
-            name="deployment.spec.template.metadata.labels"
-            label="标签"
-            rules={[
-              {
-                required: true,
-                message:
-                  '请输入标签与值（JSON对象），例如：{"app": "demo", "version": "1.7"}',
-              },
-            ]}
-          >
-            <Input placeholder="请输入标签与值（JSON对象）" />
-          </Form.Item>
-          <Form.Item
-            name="deployment.spec.template.spec.containers"
-            label="容器"
-            rules={[
-              {
-                required: true,
-                message:
-                  '请输入容器名称与镜像（JSON数组）,例如：[{"name": "demo1", "image": "image1"}, {"name": "demo2", "image": "image2"},]',
-              },
-            ]}
-          >
-            <Input placeholder='例如：[{"name": "demo1", "image": "image1"}, {"name": "demo2", "image": "image2"},]' />
-          </Form.Item>
-        </div>
-        <div>
-          <Title level={4}>服务信息</Title>
-          <Form.Item
-            name="service.name"
-            label="服务名称"
-            rules={[{ required: true, message: '请输入服务名称' }]}
-          >
-            <Input placeholder="请输入服务名称" />
-          </Form.Item>
-          <Form.Item
-            name="service.kind"
-            label="服务类型"
-            rules={[{ required: true, message: '请选择服务类型' }]}
-          >
-            <Select placeholder="请选择服务类型">
-              <Option value="Service">Service</Option>
-              <Option value="LoadBalancer">LoadBalancer(推荐)</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="service.labels"
-            label="标签"
-            rules={[
-              {
-                required: true,
-                message:
-                  '请输入标签与值（JSON对象），例如：{"app": "demo", "version": "1.7"}',
-              },
-            ]}
-          >
-            <Input placeholder="请输入标签与值（JSON对象）" />
-          </Form.Item>
+  }
+  function checkAndWrapperData() {
+    const { deployment, service } = data;
 
-          <Form.Item
-            name="service.ports"
-            label="端口"
-            rules={[
-              {
-                required: true,
-                message:
-                  '请输入端口信息（JSON数组）,例如：[{"port": 80, "targetPort": 8080}, {"port": 81, "targetPort": 8081}]',
-              },
-            ]}
+    try {
+      const deploymentMetadataLabels = JSON.parse(deployment.metadata.labels);
+      const deploymentSpecSelectorMatchLabels = JSON.parse(
+        deployment.spec.selector.matchLabels,
+      );
+      const deploymentSpecTemplateMetadataLabels = JSON.parse(
+        deployment.spec.template.metadata.labels,
+      );
+      const deploymentSpecTemplateSpecContainers = JSON.parse(
+        deployment.spec.template.spec.containers,
+      );
+      const serviceMetadataLabels = JSON.parse(service.metadata.labels);
+      const serviceSpecSelector = JSON.parse(service.spec.selector);
+      const serviceSpecPorts = JSON.parse(service.spec.ports);
+      const deploymentInfo = {
+        ...deployment,
+        metadata: {
+          ...deployment.metadata,
+          labels: deploymentMetadataLabels,
+        },
+        spec: {
+          ...deployment.spec,
+          selector: {
+            matchLabels: deploymentSpecSelectorMatchLabels,
+          },
+          template: {
+            ...deployment.template,
+            metadata: {
+              labels: deploymentSpecTemplateMetadataLabels,
+            },
+            spec: {
+              containers: deploymentSpecTemplateSpecContainers,
+            },
+          },
+        },
+      };
+      const serviceInfo = {
+        ...service,
+        metadata: {
+          ...service.metadata,
+          labels: serviceMetadataLabels,
+        },
+        spec: {
+          ...service.spec,
+          selector: serviceSpecSelector,
+          ports: serviceSpecPorts,
+        },
+      };
+      submitData(deploymentInfo, serviceInfo);
+    } catch (e) {
+      message.error('JSON格式错误');
+    }
+  }
+  async function submitData(deployment = {}, service = {}) {
+    const namespace = data.namespace;
+    try {
+      await createDeployment(deployment, namespace);
+      try {
+        await createService(service, namespace);
+        message.success('创建成功', 2, () => history.push('/'));
+      } catch (error) {
+        await deleteDeployment(deployment.metadata.name, namespace);
+        message.error('创建失败');
+      }
+    } catch (e) {
+      message.error('创建失败');
+    }
+  }
+  const handleClick = () => {
+    checkAndWrapperData();
+  };
+  return (
+    <Layout>
+      <Form {...formItemLayout} onValuesChange={handleValueChange}>
+        <Title level={4}>Deployment Info</Title>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              name="deployment.metadata.name"
+              label="Name"
+              rules={[{ required: true, message: '请输入应用名称' }]}
+            >
+              <Input placeholder="请输入应用名称" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="namespace"
+              label="Namespace"
+              rules={[{ required: true, message: '请输入命名空间' }]}
+            >
+              <Input placeholder="请输入命名空间" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              name="deployment.spec.replicas"
+              label="Replicas"
+              rules={[
+                { required: true, message: '请输入节点数', type: 'number' },
+              ]}
+            >
+              <InputNumber placeholder="请输入节点数" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="deployment.metadata.labels"
+              label="Labels"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    '请输入标签与值（JSON对象），例如：{"app": "demo", "version": "1.7"}',
+                },
+              ]}
+            >
+              <Input placeholder="请输入标签与值（JSON对象）" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              name="deployment.spec.selector.matchLabels"
+              label="MatchLabels"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    '请输入匹配规则（JSON对象），例如：{"app": "demo", "version": "1.7"}',
+                },
+              ]}
+            >
+              <Input placeholder="请输入匹配规则" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Title level={4}>Pod Template</Title>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              name="deployment.spec.template.metadata.labels"
+              label="Labels"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    '请输入标签与值（JSON对象），例如：{"app": "demo", "version": "1.7"}',
+                },
+              ]}
+            >
+              <Input placeholder="请输入标签与值（JSON对象）" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="deployment.spec.template.spec.containers"
+              label="Containers"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    '请输入容器名称与镜像（JSON数组）,例如：[{"name": "demo1", "image": "image1"}, {"name": "demo2", "image": "image2"},]',
+                },
+              ]}
+            >
+              <Input placeholder='例如：[{"name": "demo1", "image": "image1"}, {"name": "demo2", "image": "image2"},]' />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Title level={4}>Service</Title>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              name="service.metadata.name"
+              label="Name"
+              rules={[{ required: true, message: '请输入服务名称' }]}
+            >
+              <Input placeholder="请输入服务名称" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="service.spec.type"
+              label="Type"
+              rules={[{ required: true, message: '请选择服务类型' }]}
+            >
+              <Select placeholder="请选择服务类型">
+                <Option value="ClusterIP">ClusterIP</Option>
+                <Option value="LoadBalancer">LoadBalancer</Option>
+                <Option value="NodePort">NodePort</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              name="service.metadata.labels"
+              label="Labels"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    '请输入标签与值（JSON对象），例如：{"app": "demo", "version": "1.7"}',
+                },
+              ]}
+            >
+              <Input placeholder="请输入标签与值（JSON对象）" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="service.spec.selector"
+              label="Selector"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    '请输入Selector（JSON对象），例如：{"app": "demo", "version": "1.7"}',
+                },
+              ]}
+            >
+              <Input placeholder="请输入Selector（JSON对象）" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={12}>
+            <Form.Item
+              name="service.spec.ports"
+              label="Ports"
+              rules={[
+                {
+                  required: true,
+                  message:
+                    '请输入端口信息（JSON数组）,例如：[{"port": 80, "targetPort": 8080}]',
+                },
+              ]}
+            >
+              <Input placeholder='例如：[{"port": 80, "targetPort": 8080}]' />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row justify="center">
+          <Button
+            type="primary"
+            style={{ marginTop: 16 }}
+            htmlType="submit"
+            onClick={handleClick}
           >
-            <Input placeholder='例如：[{"port": 80, "targetPort": 8080}, {"port": 81, "targetPort": 8081}]' />
-          </Form.Item>
-        </div>
-        <div className={styles.buttonContainer}>
-          <Button type="primary" style={{ marginTop: 16 }} htmlType="submit">
             Submit
           </Button>
-        </div>
+        </Row>
       </Form>
-    );
-  }
+    </Layout>
+  );
 }
-
-export default Deployment;
+export default NewDeployment;
