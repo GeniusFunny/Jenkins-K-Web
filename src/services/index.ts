@@ -80,7 +80,7 @@ function fetchJobConfig(name: string) {
 
 function updateJobConfig(name: string, data: {}) {
   return api<{}>(`${JenkinsPath}/jobConfig?job=${name}`, {
-    method: 'POST',
+    method: 'PUT',
     body: data,
   });
 }

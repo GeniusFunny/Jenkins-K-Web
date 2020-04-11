@@ -50,6 +50,18 @@ export default {
         visible: false,
       };
     },
+    start(state: State) {
+      return {
+        ...state,
+        loading: true,
+      };
+    },
+    finished(state: State) {
+      return {
+        ...state,
+        loading: false,
+      };
+    },
   },
   effects: {
     *fetchList(payload: Payload, { call, put }) {
@@ -62,33 +74,53 @@ export default {
           data: items,
         });
       } catch (e) {
-        message.error(`加载失败，${e.message}`);
+        message.error(`获取失败，${e.message}`, 1, () => {
+          put({
+            type: 'finished',
+          });
+        });
       }
     },
     *create(payload: Payload, { call, put }) {
       const data = payload.data;
       const namespace = payload.namespace;
       try {
-        yield call(createDeployment, data, namespace);
-        message.success('新建成功');
         yield put({
-          type: 'fetchList',
+          type: 'start',
+        });
+        yield call(createDeployment, data, namespace);
+        message.success('新建成功', 1, () => {
+          put({
+            type: 'fetchList',
+          });
         });
       } catch (e) {
-        message.error(`创建失败，${e.message}`);
+        message.error(`创建失败, ${e.message}`, 1, () => {
+          put({
+            type: 'finished',
+          });
+        });
       }
     },
     *delete(payload: Payload, { call, put }) {
       const name = payload.name || '';
       const namespace = payload.namespace;
       try {
-        yield call(deleteDeployment, name, namespace);
-        message.success('删除成功');
         yield put({
-          type: 'fetchList',
+          type: 'start',
+        });
+        yield call(deleteDeployment, name, namespace);
+        message.success('删除成功', 1, () => {
+          put({
+            type: 'fetchList',
+          });
         });
       } catch (e) {
-        message.error(`删除失败，${e.message}`);
+        message.error(`删除失败，${e.message}`, 1, () => {
+          put({
+            type: 'finished',
+          });
+        });
       }
     },
     *update(payload: Payload, { call, put }) {
@@ -96,26 +128,50 @@ export default {
       const namespace = payload.namespace;
       const data = payload.data;
       try {
+        yield put({
+          type: 'start',
+        });
         yield call(updateDeployment, name, data, namespace);
-        message.success('更新成功');
         yield put({
           type: 'fetchList',
         });
+        yield put({
+          type: 'finished',
+        });
+        message.success('更新成功', 1, () => {
+          put({
+            type: 'hiddenDeploymentInfo',
+          });
+        });
       } catch (e) {
-        message.error(`更新失败，${e.message}`);
+        message.error(`更新失败，${e.message}`, 1, () => {
+          put({
+            type: 'finished',
+          });
+        });
       }
     },
     *rollback(payload: Payload, { call, put }) {
       const name = payload.name || '';
       const namespace = payload.namespace;
       try {
+        yield put({
+          type: 'start',
+        });
         yield call(rollbackDeployment, name, namespace);
         message.success('回滚成功');
         yield put({
           type: 'fetchList',
         });
+        yield put({
+          type: 'finished',
+        });
       } catch (e) {
-        message.error(`回滚失败, ${e.message}`);
+        message.error(`回滚失败, ${e.message}`, 1, () => {
+          put({
+            type: 'finished',
+          });
+        });
       }
     },
   },

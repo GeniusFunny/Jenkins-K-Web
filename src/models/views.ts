@@ -37,6 +37,7 @@ export default {
       return {
         ...state,
         visible: false,
+        currentView: {},
       };
     },
     deleteView(state: State, payload: Payload) {

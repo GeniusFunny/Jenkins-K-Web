@@ -26,8 +26,8 @@ export default function SiderLyout(props) {
     <Sider collapsible collapsed={collapsed} onCollapse={handleChangeToggle}>
       <div className={styles.logo}>App</div>
       <Menu theme="dark" defaultSelectedKeys={[selectedPath]} mode="inline">
-        <Menu.Item key="/management">
-          <Link to="/management">
+        <Menu.Item key="/deployments">
+          <Link to="/deployments">
             <CodeOutlined />
             <span>应用</span>
           </Link>

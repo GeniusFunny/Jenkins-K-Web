@@ -1,5 +1,6 @@
-import { fetchJobList, fetchJobInfo } from '../services/index';
+import { fetchJobList, fetchJobInfo, deleteJob } from '../services/index';
 import { JobList } from '../types/api';
+import { message } from 'antd';
 
 interface State {
   list: JobList;
@@ -38,14 +39,6 @@ export default {
         visible: false,
       };
     },
-    deleteJob(state: State, payload: Payload) {
-      const name = payload.name || '';
-      return {
-        ...state,
-        visible: false,
-        list: state.list.filter(job => job.name !== name),
-      };
-    },
   },
   effects: {
     *fetchList(payload: Payload, { call, put }) {
@@ -59,6 +52,18 @@ export default {
       const job = payload.name;
       const data = yield call(fetchJobInfo, job);
       return data;
+    },
+    *deleteJob(payload: Payload, { call, put }) {
+      const name = payload.name || '';
+      try {
+        yield call(deleteJob, name);
+        message.success('删除成功');
+        yield put({
+          type: 'fetchList',
+        });
+      } catch (e) {
+        message.error(`删除失败，${e.message}`);
+      }
     },
   },
 };

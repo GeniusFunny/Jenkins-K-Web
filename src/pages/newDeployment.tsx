@@ -38,9 +38,11 @@ const formItemLayout = {
     },
   },
 };
+
 function NewDeployment() {
-  let data = {
-    namespace: '',
+  const [form] = Form.useForm();
+  form.setFieldsValue({
+    namespace: 'default',
     deployment: {
       metadata: {
         name: '',
@@ -72,21 +74,9 @@ function NewDeployment() {
       },
       ports: '',
     },
-  };
-  function handleValueChange(changedValues = {}) {
-    const keyString = Object.keys(changedValues)[0];
-    const value = Object.values(changedValues)[0];
-    const keys = keyString.split('.');
-    const keysLen = keys.length;
-    let cur = data;
-    for (let i = 0; i < keysLen - 1; i++) {
-      cur = cur[keys[i]];
-    }
-    cur[keys[keysLen - 1]] = value;
-  }
-  function checkAndWrapperData() {
+  });
+  function checkAndWrapperData(data: any) {
     const { deployment, service } = data;
-
     try {
       const deploymentMetadataLabels = JSON.parse(deployment.metadata.labels);
       const deploymentSpecSelectorMatchLabels = JSON.parse(
@@ -99,6 +89,7 @@ function NewDeployment() {
         deployment.spec.template.spec.containers,
       );
       const serviceMetadataLabels = JSON.parse(service.metadata.labels);
+
       const serviceSpecSelector = JSON.parse(service.spec.selector);
       const serviceSpecPorts = JSON.parse(service.spec.ports);
       const deploymentInfo = {
@@ -128,6 +119,7 @@ function NewDeployment() {
         metadata: {
           ...service.metadata,
           labels: serviceMetadataLabels,
+          name: deployment.metadata.name,
         },
         spec: {
           ...service.spec,
@@ -137,11 +129,13 @@ function NewDeployment() {
       };
       submitData(deploymentInfo, serviceInfo);
     } catch (e) {
+      console.log(e);
       message.error('JSON格式错误');
     }
   }
+
   async function submitData(deployment = {}, service = {}) {
-    const namespace = data.namespace;
+    const namespace = form.getFieldValue('namespace');
     try {
       await createDeployment(deployment, namespace);
       try {
@@ -156,16 +150,18 @@ function NewDeployment() {
     }
   }
   const handleClick = () => {
-    checkAndWrapperData();
+    form.validateFields().then(data => {
+      checkAndWrapperData(data);
+    });
   };
   return (
     <Layout>
-      <Form {...formItemLayout} onValuesChange={handleValueChange}>
+      <Form {...formItemLayout} form={form}>
         <Title level={4}>Deployment Info</Title>
-        <Row>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="deployment.metadata.name"
+              name={['deployment', 'metadata', 'name']}
               label="Name"
               rules={[{ required: true, message: '请输入应用名称' }]}
             >
@@ -178,14 +174,14 @@ function NewDeployment() {
               label="Namespace"
               rules={[{ required: true, message: '请输入命名空间' }]}
             >
-              <Input placeholder="请输入命名空间" />
+              <Input placeholder="请输入命名空间" readOnly />
             </Form.Item>
           </Col>
         </Row>
-        <Row>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="deployment.spec.replicas"
+              name={['deployment', 'spec', 'replicas']}
               label="Replicas"
               rules={[
                 { required: true, message: '请输入节点数', type: 'number' },
@@ -196,7 +192,7 @@ function NewDeployment() {
           </Col>
           <Col span={12}>
             <Form.Item
-              name="deployment.metadata.labels"
+              name={['deployment', 'metadata', 'labels']}
               label="Labels"
               rules={[
                 {
@@ -210,10 +206,10 @@ function NewDeployment() {
             </Form.Item>
           </Col>
         </Row>
-        <Row>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="deployment.spec.selector.matchLabels"
+              name={['deployment', 'spec', 'selector', 'matchLabels']}
               label="MatchLabels"
               rules={[
                 {
@@ -228,10 +224,10 @@ function NewDeployment() {
           </Col>
         </Row>
         <Title level={4}>Pod Template</Title>
-        <Row>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="deployment.spec.template.metadata.labels"
+              name={['deployment', 'spec', 'template', 'metadata', 'labels']}
               label="Labels"
               rules={[
                 {
@@ -246,7 +242,7 @@ function NewDeployment() {
           </Col>
           <Col span={12}>
             <Form.Item
-              name="deployment.spec.template.spec.containers"
+              name={['deployment', 'spec', 'template', 'spec', 'containers']}
               label="Containers"
               rules={[
                 {
@@ -261,19 +257,10 @@ function NewDeployment() {
           </Col>
         </Row>
         <Title level={4}>Service</Title>
-        <Row>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="service.metadata.name"
-              label="Name"
-              rules={[{ required: true, message: '请输入服务名称' }]}
-            >
-              <Input placeholder="请输入服务名称" />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="service.spec.type"
+              name={['service', 'spec', 'type']}
               label="Type"
               rules={[{ required: true, message: '请选择服务类型' }]}
             >
@@ -285,10 +272,10 @@ function NewDeployment() {
             </Form.Item>
           </Col>
         </Row>
-        <Row>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="service.metadata.labels"
+              name={['service', 'metadata', 'labels']}
               label="Labels"
               rules={[
                 {
@@ -303,7 +290,7 @@ function NewDeployment() {
           </Col>
           <Col span={12}>
             <Form.Item
-              name="service.spec.selector"
+              name={['service', 'spec', 'selector']}
               label="Selector"
               rules={[
                 {
@@ -317,10 +304,10 @@ function NewDeployment() {
             </Form.Item>
           </Col>
         </Row>
-        <Row>
+        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="service.spec.ports"
+              name={['service', 'spec', 'ports']}
               label="Ports"
               rules={[
                 {

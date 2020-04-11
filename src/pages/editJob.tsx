@@ -1,5 +1,5 @@
-import React from 'react';
-import { createJob } from '../services/index';
+import React, { useEffect } from 'react';
+import { updateJobConfig, fetchJobConfig } from '../services/index';
 import { history } from 'umi';
 import {
   Form,
@@ -31,37 +31,60 @@ const formItemLayout = {
     },
   },
 };
-function NewJob() {
+type Props = {
+  location: {
+    query: {
+      job: string;
+    };
+  };
+};
+function EditJob(props: Props) {
+  const jobName = props.location.query.job || '';
   const [form] = Form.useForm();
-  form.setFieldsValue({
-    name: '', // 任务名称
-    description: '', // 任务描述
-    gitUrl: '', // git地址
-    gitCredetialsId: '', // git认证码
-    command: '', // 构建命令
-    webhookToken: '', // webhook token，设置后需用在git仓库设置webhook
-    recipientList: '', // 收件人
-  });
-  async function submitData(data: {}) {
+  async function setValues() {
     try {
-      await createJob(data);
-      message.success('创建成功', 2, () => {
-        history.push('/jobs');
+      const res = await fetchJobConfig(jobName);
+      const { project = {} } = res;
+      form.setFieldsValue({
+        name: jobName, // 任务名称
+        description: project.description, // 任务描述
+        gitUrl:
+          project.scm.userRemoteConfigs['hudson.plugins.git.UserRemoteConfig']
+            .url, // git地址
+        gitCredetialsId:
+          project.scm.userRemoteConfigs['hudson.plugins.git.UserRemoteConfig']
+            .credetialsId, // git认证码
+        command: project.builders['hudson.tasks.Shell'].command, // 构建命令
+        webhookToken:
+          project.triggers['org.jenkinsci.plugins.gwt.GenericTrigger'].token, // webhook token，设置后需用在git仓库设置webhook
+        recipientList:
+          project.publishers['hudson.plugins.emailext.ExtendedEmailPublisher']
+            .recipientList, // 收件人
       });
     } catch (e) {
-      message.error('创建失败');
+      message.error('获取失败');
     }
   }
-  const handleClick = () => {
-    form.validateFields().then(data => {
-      submitData(data);
+  useEffect(() => {
+    setValues();
+  }, [jobName]);
+  function handleClick() {
+    form.validateFields().then(async data => {
+      try {
+        await updateJobConfig(data.name, data);
+        message.success('更新成功', 2, () => {
+          history.push('/jobs');
+        });
+      } catch (e) {
+        message.error('更新失败');
+      }
     });
-  };
+  }
   return (
     <Layout>
       <Form {...formItemLayout} form={form}>
         <Row justify={'center'}>
-          <Title level={4}>新建任务</Title>
+          <Title level={4}>任务配置</Title>
         </Row>
         <Row>
           <Col span={12}>
@@ -153,4 +176,4 @@ function NewJob() {
     </Layout>
   );
 }
-export default NewJob;
+export default EditJob;
