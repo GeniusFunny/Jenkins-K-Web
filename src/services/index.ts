@@ -4,6 +4,7 @@ import { ViewInfo, ViewList, JobList, JobInfo } from '../types/api';
 const API = 'http://localhost:7001/api';
 const JenkinsPath = `${API}/jenkins`;
 const K8sPath = `${API}/k8s`;
+const deployPath = `${API}/deploy`;
 
 function api<T>(url: string, options?: object): Promise<T> {
   if (options) {
@@ -98,7 +99,49 @@ function enableJob(name: string) {
     body: { job: name },
   });
 }
+/*
+ router.get(`${jenkinsPath}/build/info`, controller.jenkins.build.getInfo);
+  router.get(`${jenkinsPath}/build/last`, controller.jenkins.build.last);
+  router.get(`${jenkinsPath}/build/lastSuccessfulBuild`, controller.jenkins.build.lastSuccessfulBuild);
+  router.post(`${jenkinsPath}/build/start`, controller.jenkins.build.start);
+  router.delete(`${jenkinsPath}/build/delete`, controller.jenkins.build.delete);
+  router.post(`${jenkinsPath}/build/stop`, controller.jenkins.build.stop);
+  router.get(`${jenkinsPath}/build/log`, controller.jenkins.build.log);
+*/
 /* Build */
+function fetchBuildInfo(job, view = 'all') {
+  return api<{}>(`${JenkinsPath}/build/info?job=${job}&view=${view}`);
+}
+function fetchLastBuildInfo(job, id, view = 'all') {
+  return api<{}>(`${JenkinsPath}/build/last?job=${job}&id=${id}&view=${view}`);
+}
+function fetchLastSuccessfulBuildInfo(job, id, view = 'all') {
+  return api<{}>(
+    `${JenkinsPath}/build/lastSuccessfulBuild?job=${job}&id=${id}&view=${view}`,
+  );
+}
+function startNewBuild(job, view = 'all') {
+  return api<{}>(`${JenkinsPath}/build/start`, {
+    method: 'POST',
+    body: { job, view },
+  });
+}
+function stopBuild(job, id, view = 'all') {
+  return api<{}>(`${JenkinsPath}/build/stop`, {
+    method: 'POST',
+    body: { job, view, id },
+  });
+}
+function deleteBuild(job, id, view = 'all') {
+  return api<{}>(`${JenkinsPath}/build/delete`, {
+    method: 'DELETE',
+    body: { job, view, id },
+  });
+}
+function fetchBuildLog(job, id, view = 'all') {
+  return api<{}>(`${JenkinsPath}/build/log?job=${job}&id=${id}&view=${view}`);
+}
+
 /* Login */
 /* Opertion */
 
@@ -192,6 +235,12 @@ function createService(data, namespace = 'default') {
   });
 }
 
+/* Deplpy */
+
+function fetchDeployInfo(job, view = 'all') {
+  return api<{}>(`${deployPath}/info?job=${job}&view=${view}`);
+}
+
 export {
   fetchViewInfo,
   fetchViewList,
@@ -219,4 +268,12 @@ export {
   createService,
   deleteService,
   updateService,
+  fetchDeployInfo,
+  fetchBuildLog,
+  fetchBuildInfo,
+  fetchLastBuildInfo,
+  fetchLastSuccessfulBuildInfo,
+  deleteBuild,
+  startNewBuild,
+  stopBuild,
 };

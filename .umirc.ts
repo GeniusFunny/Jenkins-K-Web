@@ -13,6 +13,7 @@ export default defineConfig({
         { exact: true, path: '/newJob', component: '@/pages/newJob' },
         { exact: true, path: '/editJob', component: '@/pages/editJob' },
         { exact: true, path: '/deployments', component: '@/pages/deployments' },
+        { exact: true, path: '/deploy', component: '@/pages/deploy' },
         {
           exact: true,
           path: '/newDeployment',

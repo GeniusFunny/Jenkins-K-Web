@@ -1,7 +1,11 @@
 import React, { useEffect } from 'react';
 import { connect, history } from 'umi';
 import { Table, Tag, Button } from 'antd';
-import { DeleteOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  DeleteOutlined,
+  SettingOutlined,
+  PlayCircleOutlined,
+} from '@ant-design/icons';
 
 type JobClass = {
   'hudson.model.FreeStyleProject': string;
@@ -69,6 +73,10 @@ function Jobs(props: any) {
       key: 'action',
       render: (text: any, record: { name: string }) => (
         <div>
+          <PlayCircleOutlined
+            style={{ marginRight: 20 }}
+            onClick={() => history.push(`/deploy?job=${record.name}`)}
+          />
           <SettingOutlined
             style={{ marginRight: 20 }}
             onClick={() => history.push(`/editJob?job=${record.name}`)}

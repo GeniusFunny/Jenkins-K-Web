@@ -5,11 +5,8 @@ import styles from './sider.css';
 
 import {
   LogoutOutlined,
-  BarChartOutlined,
   SlidersOutlined,
   ClusterOutlined,
-  DeploymentUnitOutlined,
-  CodeOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -28,14 +25,8 @@ export default function SiderLyout(props) {
       <Menu theme="dark" defaultSelectedKeys={[selectedPath]} mode="inline">
         <Menu.Item key="/deployments">
           <Link to="/deployments">
-            <CodeOutlined />
-            <span>应用</span>
-          </Link>
-        </Menu.Item>
-        <Menu.Item key="/deploy">
-          <Link to="/deploy">
-            <DeploymentUnitOutlined />
-            <span>发布</span>
+            <ClusterOutlined />
+            <span>线上实例管理</span>
           </Link>
         </Menu.Item>
         <SubMenu
@@ -54,19 +45,6 @@ export default function SiderLyout(props) {
             <Link to="/jobs">任务</Link>
           </Menu.Item>
         </SubMenu>
-        <SubMenu
-          key="sub2"
-          title={
-            <span>
-              <ClusterOutlined />
-              <span>线上实例管理</span>
-            </span>
-          }
-        >
-          <Menu.Item key="/update">更新</Menu.Item>
-          <Menu.Item key="/rollback">回滚</Menu.Item>
-        </SubMenu>
-
         <Menu.Item key="/login">
           <Link to="/login">
             <LogoutOutlined />

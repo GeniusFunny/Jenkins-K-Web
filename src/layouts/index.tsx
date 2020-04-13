@@ -8,13 +8,13 @@ import SiderLayout from './SiderLayout';
 const { Content } = Layout;
 
 export default function BasicLayout(props) {
-  const { location, history, match } = props;
+  const { location } = props;
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <SiderLayout location={location} />
-      <Layout className="site-layout">
+      <Layout>
         <HeaderLayout />
-        <Content style={{ margin: '0 16px' }}>
+        <Content>
           <div
             className="site-layout-background"
             style={{ padding: 24, minHeight: 360 }}
