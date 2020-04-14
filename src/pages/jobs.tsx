@@ -71,11 +71,18 @@ function Jobs(props: any) {
     {
       title: 'Action',
       key: 'action',
-      render: (text: any, record: { name: string }) => (
+      render: (
+        text: any,
+        record: { name: string; nextBuildNumber: number },
+      ) => (
         <div>
           <PlayCircleOutlined
             style={{ marginRight: 20 }}
-            onClick={() => history.push(`/deploy?job=${record.name}`)}
+            onClick={() =>
+              history.push(
+                `/deploy?job=${record.name}&nextBuildNumber=${record.nextBuildNumber}`,
+              )
+            }
           />
           <SettingOutlined
             style={{ marginRight: 20 }}

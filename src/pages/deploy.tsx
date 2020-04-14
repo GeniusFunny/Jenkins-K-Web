@@ -8,14 +8,15 @@ import {
   Row,
   Col,
   Typography,
+  Modal,
 } from 'antd';
-import { Link } from 'umi';
-import Terminal from 'terminal-in-react';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Link, history } from 'umi';
 import {
   fetchDeployInfo,
   startNewBuild,
-  fetchBuildInfo,
-  fetchBuildLog,
+  updateBuildStatus,
+  updateDeployStatus,
 } from '../services/index';
 import './deploy.css';
 
@@ -47,11 +48,17 @@ const steps = [
     title: '生产环境',
     content: 'Deliver-Prod',
   },
+  {
+    title: '完成',
+    content: 'Yes',
+  },
 ];
 
 function Deploy(props: any) {
-  const { job = '', view = 'all' } = props.location.query;
-  const [current, setCurrent] = useState(0);
+  let { job = '', view = 'all', nextBuildNumber = 0 } = props.location.query;
+  const [deployId, setDeployId] = useState('');
+  const [log, setLog] = useState('');
+  const [current, setCurrent] = useState(1);
   const [building, setBuilding] = useState(false);
   const [lastBuild, setLastBuild] = useState({
     name: '',
@@ -70,7 +77,7 @@ function Deploy(props: any) {
     imageTag: '',
     replicas: 0,
   });
-  const [log, setLog] = useState('');
+
   async function getInfo() {
     try {
       let res = await fetchDeployInfo(job, view);
@@ -109,18 +116,43 @@ function Deploy(props: any) {
   useEffect(() => {
     getInfo();
   }, []);
+  useEffect(() => {
+    if (deployId) {
+      pollingStatus();
+    }
+  }, [deployId]);
   function next() {
-    if (current === 0) {
-      build();
-    } else if (current === 3) {
-      deployDev();
-    } else if (current === 4) {
-      deployProd();
+    switch (current) {
+      case 0:
+      case 6:
+        Modal.confirm({
+          title: '提醒',
+          icon: <ExclamationCircleOutlined />,
+          content: '确认后即开始新的一轮构建',
+          onOk: () =>
+            history.push(
+              `/deploy?job=${job}&nextBuildNumber=${parseInt(nextBuildNumber) +
+                1}`,
+            ),
+        });
+        break;
+      case 1:
+        build();
+        break;
+      case 4:
+        deployDev();
+        break;
+      case 5:
+        deployProd();
+        break;
+      default:
+        message.warning('操作无效');
     }
   }
   async function startBuild() {
     try {
-      let res = await startNewBuild(job, view);
+      let res = await startNewBuild(job, parseInt(nextBuildNumber), view);
+      setDeployId(res.id);
     } catch (e) {
       message.error('发起构建失败', 3, () => {
         setCurrent(0);
@@ -128,17 +160,80 @@ function Deploy(props: any) {
       });
     }
   }
-  function getBuildLog() {}
-  function build() {
+  async function pollingStatus() {
+    try {
+      let res = await updateBuildStatus(deployId);
+      const { currentStatus, finished, log } = res;
+      if (finished) {
+        if (currentStatus === 'success') {
+          setCurrent(6);
+          message.success('此构建已完成', 3);
+        } else {
+          setCurrent(0);
+          message.error('此构建已终止', 3);
+        }
+      } else {
+        if (currentStatus === 'build') {
+          setTimeout(() => {
+            pollingStatus();
+          }, 1000 * 5);
+          setCurrent(1);
+        } else if (currentStatus === 'pre-dev') {
+          getInfo();
+          setCurrent(4);
+          setBuilding(false);
+        } else if (currentStatus === 'pre-prod') {
+          setCurrent(5);
+          setBuilding(false);
+        }
+      }
+      setLog(log);
+    } catch (e) {
+      setTimeout(async () => {
+        await pollingStatus();
+      }, 1000 * 10);
+    }
+  }
+  async function build() {
     setCurrent(1);
+    startBuild();
     setBuilding(true);
   }
-  function deployDev() {
-    setCurrent(4);
+  async function deployDev() {
     setBuilding(true);
+    try {
+      let res = await updateDeployStatus(deployId, 'dev');
+      const { currentStatus } = res;
+      if (currentStatus === 'pre-prod') {
+        setCurrent(5);
+        getInfo();
+      } else {
+        message.error('部署失败，请重试', 3);
+      }
+      setBuilding(false);
+    } catch (e) {
+      message.error('部署失败，请重试', 3, () => {
+        setBuilding(false);
+      });
+    }
   }
-  function deployProd() {
-    setCurrent(5);
+  async function deployProd() {
+    try {
+      let res = await updateDeployStatus(deployId, 'prod');
+      const { currentStatus } = res;
+      if (currentStatus === 'success') {
+        setCurrent(6);
+        getInfo();
+        message.success('发布完成', 5);
+      } else {
+        message.error('部署失败，请重试', 3);
+      }
+      setBuilding(false);
+    } catch (e) {
+      message.error('部署失败，请重试', 3, () => {
+        setBuilding(false);
+      });
+    }
   }
   return (
     <Layout>
@@ -229,7 +324,7 @@ function Deploy(props: any) {
         <Row>
           <div className="steps-action">
             <Button type="primary" onClick={() => next()} loading={building}>
-              Next
+              执行
             </Button>
           </div>
         </Row>
@@ -243,18 +338,7 @@ function Deploy(props: any) {
         </Row>
         <br />
         <Row>
-          <Terminal
-            color="black"
-            backgroundColor="white"
-            barColor="black"
-            style={{
-              fontWeight: 'bold',
-              fontSize: '1em',
-              width: '100%',
-              height: '500px',
-            }}
-            msg={log}
-          />
+          <Paragraph className="build-log">{log}</Paragraph>
         </Row>
       </section>
     </Layout>

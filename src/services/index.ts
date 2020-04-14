@@ -99,15 +99,6 @@ function enableJob(name: string) {
     body: { job: name },
   });
 }
-/*
- router.get(`${jenkinsPath}/build/info`, controller.jenkins.build.getInfo);
-  router.get(`${jenkinsPath}/build/last`, controller.jenkins.build.last);
-  router.get(`${jenkinsPath}/build/lastSuccessfulBuild`, controller.jenkins.build.lastSuccessfulBuild);
-  router.post(`${jenkinsPath}/build/start`, controller.jenkins.build.start);
-  router.delete(`${jenkinsPath}/build/delete`, controller.jenkins.build.delete);
-  router.post(`${jenkinsPath}/build/stop`, controller.jenkins.build.stop);
-  router.get(`${jenkinsPath}/build/log`, controller.jenkins.build.log);
-*/
 /* Build */
 function fetchBuildInfo(job, view = 'all') {
   return api<{}>(`${JenkinsPath}/build/info?job=${job}&view=${view}`);
@@ -120,10 +111,10 @@ function fetchLastSuccessfulBuildInfo(job, id, view = 'all') {
     `${JenkinsPath}/build/lastSuccessfulBuild?job=${job}&id=${id}&view=${view}`,
   );
 }
-function startNewBuild(job, view = 'all') {
+function startNewBuild(job, nextBuildNumber = 1, view = 'all') {
   return api<{}>(`${JenkinsPath}/build/start`, {
     method: 'POST',
-    body: { job, view },
+    body: { job, view, nextBuildNumber },
   });
 }
 function stopBuild(job, id, view = 'all') {
@@ -241,6 +232,24 @@ function fetchDeployInfo(job, view = 'all') {
   return api<{}>(`${deployPath}/info?job=${job}&view=${view}`);
 }
 
+function fetchDeployStatus(id) {
+  return api<{}>(`${deployPath}/status?id=${id}`);
+}
+
+function updateBuildStatus(id) {
+  return api<{}>(`${deployPath}/updateBuildStatus`, {
+    method: 'POST',
+    body: { id },
+  });
+}
+
+function updateDeployStatus(id, env = 'dev') {
+  return api<{}>(`${deployPath}/updateDeploymentStatus`, {
+    method: 'POST',
+    body: { id, env },
+  });
+}
+
 export {
   fetchViewInfo,
   fetchViewList,
@@ -276,4 +285,7 @@ export {
   deleteBuild,
   startNewBuild,
   stopBuild,
+  fetchDeployStatus,
+  updateBuildStatus,
+  updateDeployStatus,
 };

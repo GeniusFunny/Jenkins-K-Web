@@ -86,18 +86,18 @@ function Deployments(props: any) {
         <span>{containers.length ? containers[0].image : '无'}</span>
       ),
     },
-    {
-      title: '端口',
-      dataIndex: ['spec', 'template', 'spec', 'containers'],
-      align: 'center',
-      render: (containers: string | any[]) => (
-        <span>
-          {containers.length && Array.isArray(containers[0].ports)
-            ? containers[0].ports[0].containerPort
-            : '无'}
-        </span>
-      ),
-    },
+    // {
+    //   title: '端口',
+    //   dataIndex: ['spec', 'template', 'spec', 'containers'],
+    //   align: 'center',
+    //   render: (containers: string | any[]) => (
+    //     <span>
+    //       {containers.length && Array.isArray(containers[0].ports)
+    //         ? containers[0].ports[0].containerPort
+    //         : '无'}
+    //     </span>
+    //   ),
+    // },
     {
       title: '状态',
       dataIndex: ['status'],
@@ -117,6 +117,7 @@ function Deployments(props: any) {
       title: 'Action',
       key: 'action',
       align: 'center',
+      width: 200,
       render: (
         text: any,
         record: { metadata: { name: any; namespace: any } },

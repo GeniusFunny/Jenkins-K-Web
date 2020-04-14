@@ -45,7 +45,7 @@ function Views(props: any) {
       key: 'jobs',
       render: (jobs: { name: React.ReactNode }[]) =>
         jobs.map((item: { name: React.ReactNode }) => (
-          <Link to={`/jobs/${item.name}`}>
+          <Link to={`/jobs`}>
             <Tag color={'geekblue'}>{item.name}</Tag>
           </Link>
         )),

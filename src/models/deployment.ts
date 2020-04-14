@@ -114,6 +114,9 @@ export default {
           put({
             type: 'fetchList',
           });
+          put({
+            type: 'finished',
+          });
         });
       } catch (e) {
         message.error(`删除失败，${e.message}`, 1, () => {
